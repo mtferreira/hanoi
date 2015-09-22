@@ -78,7 +78,8 @@ int verificaMovimento(struct disco *v1, struct disco *v2, int n_real) {
     return 0;
 }
 
-void doMove(struct disco *v1, struct disco *v2, struct disco *v3, int n_real) {
+void move(struct disco *v1, struct disco *v2, struct disco *v3, int n_real, int *moveTo) {
+
     int last1, last2, last3;
     struct disco discoNull = {-1, -1, -1, -1};
 
@@ -86,8 +87,9 @@ void doMove(struct disco *v1, struct disco *v2, struct disco *v3, int n_real) {
     last2 = lastDiscTower(v2, n_real);
     last3 = lastDiscTower(v3, n_real);
 
-    if (verificaMovimento(v1, v2, n_real)) {
+    if (moveTo[0] == 1 && moveTo[1] == 2) {
         printf("torre1 pra torre2\n");
+
         v1[last1].anilha_current = 2;
         v1[last1].anilha_last = 1;
         v1[last1].anilha_next = 3;
@@ -96,8 +98,21 @@ void doMove(struct disco *v1, struct disco *v2, struct disco *v3, int n_real) {
         discoNull.anilha_current = 1;
         v1[last1] = discoNull;
 
-    } else if (verificaMovimento(v1, v3, n_real)) {
+    } else if (moveTo[0] == 3 && moveTo[1] == 1) {
+        printf("torre3 pra torre1\n");
+
+        v3[last3].anilha_current = 1;
+        v3[last3].anilha_last = 3;
+        v3[last3].anilha_next = 2;
+
+        v1[last1 + 1] = v3[last3];
+        discoNull.anilha_current = 3;
+        v3[last3] = discoNull;
+
+    } else if (moveTo[0] == 1 && moveTo[1] == 3) {
+
         printf("torre1 pra torre3\n");
+
         v1[last1].anilha_current = 3;
         v1[last1].anilha_last = 1;
         v1[last1].anilha_next = 2;
@@ -105,9 +120,9 @@ void doMove(struct disco *v1, struct disco *v2, struct disco *v3, int n_real) {
         v3[last3 + 1] = v1[last1];
         discoNull.anilha_current = 1;
         v1[last1] = discoNull;
-
-    } else if (verificaMovimento(v3, v2, n_real)) {
+    } else if (moveTo[0] == 3 && moveTo[1] == 2) {
         printf("torre3 pra torre2\n");
+
         v3[last3].anilha_current = 2;
         v3[last3].anilha_last = 3;
         v3[last3].anilha_next = 1;
@@ -116,28 +131,18 @@ void doMove(struct disco *v1, struct disco *v2, struct disco *v3, int n_real) {
 
         discoNull.anilha_current = 3;
         v3[last3] = discoNull;
-    } else if (verificaMovimento(v3, v1, n_real)) {
-        printf("torre3 pra torre1\n");
-        v3[last3].anilha_current = 1;
-        v3[last3].anilha_last = 3;
-        v3[last3].anilha_next = 2;
-
-        v1[last1 + 1] = v3[last3];
-        discoNull.anilha_current = 3;
-        v2[last3] = discoNull;
-
-    } else if (verificaMovimento(v2, v3, n_real)) {
+    } else if (moveTo[0] == 2 && moveTo[1] == 3) {
         printf("torre2 pra torre3\n");
+
         v2[last2].anilha_current = 3;
         v2[last2].anilha_last = 2;
         v2[last2].anilha_next = 1;
 
-        v3[last3 + 1] = v2[last2];
+        v3[last3 + 1] = v1[last2];
 
         discoNull.anilha_current = 2;
-        v2[last2] = discoNull;
-
-    } else if (verificaMovimento(v2, v1, n_real)) {
+        v1[last2] = discoNull;
+    } else if (moveTo[0] == 2 && moveTo[1] == 1) {
         printf("torre2 pra torre1\n");
         v2[last2].anilha_current = 1;
         v2[last2].anilha_last = 2;
@@ -148,9 +153,85 @@ void doMove(struct disco *v1, struct disco *v2, struct disco *v3, int n_real) {
         discoNull.anilha_current = 2;
         v2[last2] = discoNull;
     }
+
 }
 
-void hanoi(int n) {
+int doMove(struct disco *v1, struct disco *v2, struct disco *v3, int n_real, int *last_move, int *count) {
+    int moveTo[2];
+
+    //    if (*count == 5) {
+    //        printTowers(v1, v2, v3, n_real);
+    //        printf("%d\n", *last_move);
+    //        return 1;
+    //    }
+
+    if (*last_move == 2) {
+        if (verificaMovimento(v1, v3, n_real)) {
+            moveTo[0] = 1;
+            moveTo[1] = 3;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 3;
+        } else if (verificaMovimento(v3, v1, n_real)) {
+            moveTo[0] = 3;
+            moveTo[1] = 1;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 1;
+
+        } else if (verificaMovimento(v1, v2, n_real)) {
+            moveTo[0] = 1;
+            moveTo[1] = 2;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 2;
+        } else if (verificaMovimento(v3, v2, n_real)) {
+            moveTo[0] = 3;
+            moveTo[1] = 2;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 2;
+        }
+    } else if (*last_move == 3) {
+        if (verificaMovimento(v1, v2, n_real)) {
+            moveTo[0] = 1;
+            moveTo[1] = 2;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 2;
+        } else if (verificaMovimento(v2, v3, n_real)) {
+            moveTo[0] = 2;
+            moveTo[1] = 3;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 3;
+        } else if (verificaMovimento(v2, v1, n_real)) {
+            moveTo[0] = 2;
+            moveTo[1] = 1;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 1;
+        } else if (verificaMovimento(v1, v3, n_real)) {
+            moveTo[0] = 1;
+            moveTo[1] = 3;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 3;
+        }
+    } else if (*last_move == 1) {
+        if (verificaMovimento(v2, v3, n_real, &count)) {
+            moveTo[0] = 2;
+            moveTo[1] = 3;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 3;
+        } else if (verificaMovimento(v3, v2, n_real)) {
+            moveTo[0] = 3;
+            moveTo[1] = 2;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 2;
+        } else if (verificaMovimento(v1, v3, n_real)) {
+            moveTo[0] = 1;
+            moveTo[1] = 3;
+            move(v1, v2, v3, n_real, moveTo);
+            *last_move = 3;
+        }
+    }
+    return 0;
+}
+
+int hanoi(int n) {
 
     // cria as torres com base no tamanho informado
     struct disco tower[n],
@@ -173,6 +254,8 @@ void hanoi(int n) {
 
         tower_aux[0] = tower[n_real];
         last_move = 2;
+
+        printf("torre1 pra torre2\n");
     } else {
 
         tower[n_real].anilha_last = 1;
@@ -181,18 +264,17 @@ void hanoi(int n) {
 
         tower_final[0] = tower[n_real];
         last_move = 3;
+
+        printf("torre1 pra torre3\n");
     }
 
     discoNull.anilha_current = 1;
     tower[n_real] = discoNull;
 
     while (tower_final[n_real].value == -1) {
-        if (count == 6) {
-            printTowers(tower, tower_aux, tower_final, n_real);
+        if (doMove(tower, tower_aux, tower_final, n_real, &last_move, &count)) {
             return;
-        }
-
-        doMove(tower, tower_aux, tower_final, n_real);
+        };
         count++;
     }
     printf("parece q deu aqui\n\n\n");
